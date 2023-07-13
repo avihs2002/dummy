@@ -1,0 +1,70 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_NODES 5
+
+// Structure representing a network node
+typedef struct {
+    int id;
+    int *neighbors;
+    int num_neighbors;
+} Node;
+
+// Function to check for deadlocks
+int isDeadlock(Node *nodes, int *visited, int current_node, int target_node) {
+    if (current_node == target_node)
+        return 1;
+    
+    visited[current_node] = 1;
+    
+    for (int i = 0; i < nodes[current_node].num_neighbors; i++) {
+        int neighbor = nodes[current_node].neighbors[i];
+        if (!visited[neighbor] && isDeadlock(nodes, visited, neighbor, target_node))
+            return 1;
+    }
+    
+    return 0;
+}
+
+// Function to simulate network communication
+void simulateCommunication(Node *nodes, int source, int destination) {
+    int *visited = (int *)calloc(MAX_NODES, sizeof(int));
+    
+    if (isDeadlock(nodes, visited, source, destination))
+        printf("Deadlock detected. Communication from Node %d to Node %d is not possible.\n", source, destination);
+    else
+        printf("Communication from Node %d to Node %d is successful.\n", source, destination);
+    
+    free(visited);
+}
+
+int main() {
+    // Create network nodes
+    Node nodes[MAX_NODES];
+    
+    // Initialize nodes and their neighbors
+    for (int i = 0; i < MAX_NODES; i++) {
+        nodes[i].id = i;
+        nodes[i].neighbors = (int *)calloc(MAX_NODES, sizeof(int));
+        nodes[i].num_neighbors = 0;
+    }
+    
+    // Define network topology (neighbors)
+    nodes[0].neighbors[nodes[0].num_neighbors++] = 1;
+    nodes[1].neighbors[nodes[1].num_neighbors++] = 2;
+    nodes[1].neighbors[nodes[1].num_neighbors++] = 3;
+    nodes[2].neighbors[nodes[2].num_neighbors++] = 4;
+    nodes[3].neighbors[nodes[3].num_neighbors++] = 4;
+    nodes[4].neighbors[nodes[4].num_neighbors++] = 0;
+    
+    // Simulate network communication
+    int source = 0;
+    int destination = 3;
+    simulateCommunication(nodes, source, destination);
+    
+    // Free memory
+    for (int i = 0; i < MAX_NODES; i++)
+        free(nodes[i].neighbors);
+    
+    return 0;
+}
